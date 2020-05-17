@@ -1,0 +1,215 @@
+---
+title: "Group_1"
+author: "Joseph Lynch and Anand Taxali"
+date: "5/17/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+
+## Problem 1 Forest fires data
+
+```{r fig.align = "center"}
+
+library(ggplot2)
+forestfires <- read.csv("forestfires.csv")
+attach(forestfires)
+str(forestfires)
+monthly <- factor(forestfires$month, levels = c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"))
+daily <- factor(forestfires$day, levels = c("mon", "tue", "wed", "thu", "fri", "sat", "sun"))
+
+# 1a Plot area vs.temp, area vs. month, area vs. DC, area vs. RH for January
+# through December combined in one graph. Hint: Place area on Y axis and use
+# 2x2 matrix to place the plots adjacent to each other.
+
+par(mfcol = c(2, 2))
+plot(temp, area,  xlab = "Temperature", ylab = "Area")
+plot(monthly, area,  xlab = "Month", ylab = "Area")
+plot(DC, area,  xlab = "DC Index", ylab = "Area")
+plot(RH, area,  xlab = "Relative Humidity", ylab = "Area")
+
+```{r fig.align = "center"}
+#1b b. Plot the histogram of wind speed (km/h).
+
+hist(wind, xlab = "Wind speed(km/h)")
+
+# 1c Compute the summary statistics (min, 1Q, mean, median, 3Q, max,) of part b.
+summary(wind)
+
+# 1d Add a density line to the histogram in part b.
+hist(wind, xlab = "Wind speed(km/h)",freq=FALSE)
+lines(density(wind), col="red", lwd=2)
+```{r fig.align = "center"}
+#1e Plot the wind speed density function of all months in one plot. Use
+#different colors for different months in the graph to interpret your result clearly.
+#[Hint: use ggplot + geom_density or qplot(geom=density)]
+ggplot(data=forestfires, aes(x=wind,color=monthly)) +
+  geom_density(alpha=.3)
+
+
+#1f. Plot the scatter matrix for temp, RH, DC and DMC. How would you interpret the
+#result in terms of correlation among these data?
+library(gclus)
+mydata <- forestfires[c("temp", "RH", "DC", "DMC")]
+mydata.corr <- abs(cor(mydata))
+myorder <- order.single(mydata.corr)
+mycolors <- dmat.color(mydata.corr)
+cpairs(mydata,
+       myorder,
+       panel.colors=mycolors,
+       gap=.5,
+       main="Variables Ordered and Colored by Correlation"
+)
+```{r fig.align = "center"}
+#1f answers
+# DMC has a strong positive correlation to DC, but no strong correlation to the other variables
+# Temperature and RH have a strong correlation
+# DC index and tempature have a strong correlation, with high DC=high temp and low DC=low temp
+
+
+#1g Create boxplot for wind, ISI and DC. Are there any anomalies/outliers? Interpret
+# your result. 
+par(mfrow=c(1,3))
+boxplot(wind,main="wind")
+boxplot(ISI,main="ISI")
+boxplot(DC,main="DC")
+
+#1g answers 
+# Both wind and ISI have some outliers outside of the ranges of the boxplot
+# DC has a higher skewed distributio, with the median closer to Q3
+```{r fig.align = "center"}
+
+#1h. Create the histogram of DMC. Create the histogram of log of DMC. Compare the
+#result and explain your answer
+par(mfrow=c(1,2))
+hist(DMC, xlab="DMC")
+hist(log(DMC), xlab="log DMC")
+
+#The distribution is right skewed with normal DMC and left skewed with log of DMC
+
+```{r fig.align = "center"}
+
+####################################################################################
+#Problem 2 
+
+
+data1 <- read.csv("M01_quasi_twitter.csv")
+attach(data1)
+#2a How are the data distributed for friend_count variable?
+
+plot(density(data1$friends_count))
+hist(data1$friends_count)
+boxplot(data1$friends_count)
+
+#The data is constricted in a small range having large values
+
+#2b Compute the summery statistics (min, 1Q, mean, median, 3Q, max) on
+#friend_count?
+
+summary(data1$friends_count)
+```{r fig.align = "center"}
+#2c How is the data quality in friend_count variable?
+#
+#The data quality is not that great as the range is too big. also, it is not a normal
+#distribution as the mean is bigger than the median.
+
+#2d. Produce a 3D scatter plot with highlighting to impression the depth for variables
+#below on M01_quasi_twitter.csv dataset. created_at_year, education, age.
+#Put the name of the scatter plot "3D scatter plot".
+library(plotrix)
+scatterplot3d::scatterplot3d(data1$created_at_year, data1$education, data1$age,
+                             xlab = "created_at_year",
+                             ylab = "education",
+                             zlab = "age",
+                             highlight.3d=TRUE,
+                             col.axis="black",
+                             col.grid="yellow",
+                             main="3D scatter plot",
+                             pch=20,
+                             cex.symbols=1,angle= 8)
+```{r fig.align = "center"}
+#2e. Consider 650, 1000, 900, 300 and 14900 tweeter accounts are in UK, Canada,
+#India, Australia and US, respectively. Plot the percentage Pie chart includes 
+#percentage amount and country name adjacent to it, and also plot 3D pie chart
+#for those countries along with the percentage pie chart. Hint: Use C=(1, 2) matrix
+#form to plot the charts together.
+par(mfcol = c(1, 2))
+countries <- c(14900,1000,650,300,900)
+
+lbls <- c("USA", "Canada","United Kingdom","Australia","India")
+pct <- round(countries/sum(countries)*100,1)
+lblsUpdated <- paste(lbls, " ", pct, "%", sep = "") 
+pie(countries,labels = lblsUpdated,main="Pie Chart of data1 Accounts")
+
+pie3D(countries,labels=lblsUpdated,
+      radius=1.0,
+      labelcex=0.8,
+      explode=0.,
+      theta=1.0,
+      main="Pie Chart of data1 Accounts")
+
+#2f Create kernel density plot of created_at_year variable and interpret the result?
+
+par(mfrow=c(1,1))
+YearCreatedDensity <- density(data1$created_at_year)
+plot(YearCreatedDensity, main="Kernel Density of Created at Year")
+polygon(YearCreatedDensity, col="green", border="orange")
+rug(data1$created_at_year, col="blue") 
+
+
+#Based on the density plot, we can see that the values are mainly
+#concentrated between 2008 and 2014 and where the probability of
+#getting 2009 value being the highest.
+
+```{r fig.align = "center"}
+
+
+
+#####################################################################################
+
+
+
+# Problem 3
+
+#3a.Standardize the data and create new dataset with standardized data and name it
+# Ndata.
+
+
+InsuranceClaims <- read.csv("raw_data.csv")
+attach(InsuranceClaims)
+
+
+
+Ndata <- scale(InsuranceClaims,center=TRUE, scale=TRUE)
+Ndata <- as.data.frame(Ndata)
+
+
+```{r fig.align = "center"}
+#3b. Create the boxplot of all the variables in their original form.
+
+boxplot(InsuranceClaims,main="Original Form")
+
+
+#3c. Create boxplot of all the variables in their standardized form
+
+boxplot(Ndata,main="Standardized Form")
+
+#3d
+par(mfrow=(c(1,2)))
+boxplot(InsuranceClaims,main="Original Form")
+boxplot(Ndata,main="Standardized Form")
+
+# In it's original form, we can see the data's distributions individually but they are more difficult to compare distribution-wise since they have different values.
+# In standardized form, it is easier to compare the distributions of the four different values since they are on the same normal distribution scale. 
+
+```{r fig.align = "center"}
+#3e
+
+attach(Ndata)
+library(car)
+
+scatterplot(Ndata$A~Ndata$B, xlab="Sustainability",ylab="Carbon Footprint")
+
+#Sustainability and Carbon footprint to do not appear to have any correlation in this graph. 
